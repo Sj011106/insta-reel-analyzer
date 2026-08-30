@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reel to Roadmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #08090d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    ::selection {
+      background: rgba(168, 85, 247, 0.35);
+      color: #fff;
+    }
+
+    input::placeholder {
+      color: #4b4d5a;
+    }
+
+    a {
+      color: #22d3ee;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #67e8f9;
+    }
+
+    @keyframes rtr-pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.45;
+        transform: scale(0.82);
+      }
+    }
+
+    @keyframes rtr-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.55), 0 0 22px rgba(168, 85, 247, 0.28);
+      }
+
+      50% {
+        box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.6), 0 0 34px rgba(236, 72, 153, 0.32);
+      }
+    }
+
+    @keyframes rtr-drift {
+
+      0%,
+      100% {
+        transform: translate3d(0, 0, 0);
+      }
+
+      50% {
+        transform: translate3d(0, -26px, 0);
+      }
+    }
+
+    @keyframes rtr-rise {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 22px, 0);
+        filter: blur(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+        filter: blur(0);
+      }
+    }
+
+    @keyframes rtr-pan {
+      from {
+        background-position: 0% 50%;
+      }
+
+      to {
+        background-position: 200% 50%;
+      }
+    }
+
+    .step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 15px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.01em;
+      transition: color 300ms ease, background 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.02);
+      color: #555764;
+    }
+
+    .step-pill.active {
+      border: 1px solid rgba(168, 85, 247, 0.55);
+      background: rgba(168, 85, 247, 0.12);
+      color: #e9d5ff;
+      box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.25), 0 0 28px -6px rgba(168, 85, 247, 0.55);
+      animation: rtr-glow 1.8s ease-in-out infinite;
+    }
+
+    .step-pill.done {
+      border: 1px solid rgba(74, 222, 128, 0.42);
+      background: rgba(74, 222, 128, 0.09);
+      color: #bbf7d0;
+    }
+
+    .analyze-btn {
+      flex: none;
+      padding: 14px 26px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(96deg, #a855f7, #ec4899);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      box-shadow: 0 10px 30px -12px rgba(168, 85, 247, 0.85);
+      transition: transform 220ms cubic-bezier(.2, .7, .3, 1), box-shadow 220ms ease, filter 220ms ease;
+    }
+
+    .analyze-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 38px -12px rgba(236, 72, 153, 0.9);
+    }
+
+    .analyze-btn:active {
+      transform: translateY(0px) scale(0.985);
+    }
+
+    .analyze-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      letter-spacing: 0.01em;
+      color: #8b8d9c;
+      transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+    }
+
+    .toggle-btn:hover {
+      color: #e7e7ec;
+      border-color: rgba(168, 85, 247, 0.45);
+      background: rgba(168, 85, 247, 0.08);
+    }
+
+    .roadmap-content {
+      white-space: pre-wrap;
+      line-height: 1.85;
+      font-size: 0.93rem;
+      color: #cccccc;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .roadmap-content h1,
+    .roadmap-content h2,
+    .roadmap-content h3 {
+      color: #a855f7;
+      margin: 24px 0 10px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .roadmap-content strong {
+      color: #22d3ee;
+      font-weight: 600;
+    }
+
+    .roadmap-content ul,
+    .roadmap-content ol {
+      margin: 10px 0 16px 20px;
+    }
+
+    .roadmap-content li {
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      color: #94a3b8;
+    }
+
+    .roadmap-content hr {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 28px 0;
+    }
+
+    .roadmap-content code {
+      background: #1e1e2e;
+      color: #22d3ee;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div
+    style="min-height:100vh; background:#08090d; color:#e7e7ec; font-family:'Space Grotesk','Helvetica Neue',sans-serif; position:relative; overflow:hidden; -webkit-font-smoothing:antialiased;">
+
+    <!-- background glows -->
+    <div
+      style="position:absolute; top:-320px; left:50%; width:1100px; height:780px; margin-left:-550px; background:radial-gradient(closest-side,rgba(168,85,247,0.20),rgba(236,72,153,0.10) 45%,rgba(8,9,13,0) 72%); filter:blur(20px); pointer-events:none; animation:rtr-drift 18s ease-in-out infinite;">
+    </div>
+    <div
+      style="position:absolute; top:380px; right:-240px; width:620px; height:620px; background:radial-gradient(closest-side,rgba(34,211,238,0.12),rgba(8,9,13,0) 70%); filter:blur(10px); pointer-events:none;">
+    </div>
+    <canvas id="bgCanvas"
+      style="position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0;"></canvas>
+
+    <div style="position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:84px 40px 140px;">
+
+      <!-- nav -->
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:116px;">
+        <div
+          style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#6b6d7c;">
+          reel<span style="color:#a855f7;">/</span>roadmap</div>
+        <div
+          style="display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#6b6d7c;">
+          <span
+            style="width:6px; height:6px; border-radius:50%; background:#4ade80; box-shadow:0 0 10px rgba(74,222,128,0.8);"></span>
+          <span>v1.0 · beta</span>
+        </div>
+      </div>
+
+      <!-- hero -->
+      <section style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+        <div
+          style="display:inline-flex; align-items:center; gap:10px; padding:8px 16px; border-radius:999px; border:1px solid rgba(255,255,255,0.09); background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015)); backdrop-filter:blur(12px); font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.02em; color:#a9abbb; animation:rtr-rise 1100ms cubic-bezier(.16,.84,.24,1) 120ms both;">
+          <span style="color:#a855f7;">✦</span>
+          <span>AI-powered · LangGraph + RAG + Whisper + OCR</span>
+        </div>
+
+        <h1 id="titleEl"
+          style="margin:30px 0 0; display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:0 0.22em; font-family:'Bricolage Grotesque','Space Grotesk',sans-serif; font-size:clamp(58px,9.6vw,124px); line-height:0.9; font-weight:700; letter-spacing:-0.05em; animation:rtr-rise 1100ms cubic-bezier(.16,.84,.24,1) 260ms both;">
+          <span
+            style="display:inline-block; will-change:transform; background-image:linear-gradient(96deg,#f4f2ff,#c084fc,#a855f7,#f4f2ff); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; animation:rtr-pan 11s linear infinite;">Reel</span>
+          <span
+            style="display:inline-block; will-change:transform; font-style:italic; font-weight:400; font-size:0.62em; padding:0 0.08em; color:#d8b4fe;">to</span>
+          <span
+            style="display:inline-block; will-change:transform; background-image:linear-gradient(96deg,#ec4899,#22d3ee,#4ade80,#ec4899); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; animation:rtr-pan 13s linear infinite;">Roadmap</span>
+        </h1>
+
+        <p
+          style="margin:30px 0 0; max-width:540px; font-size:18px; line-height:1.55; font-weight:300; color:#8b8d9c; animation:rtr-rise 1100ms cubic-bezier(.16,.84,.24,1) 420ms both;">
+          Drop any Instagram CS project reel. Get a full project breakdown, tech stack, and learning roadmap instantly.
+        </p>
+      </section>
+
+      <!-- input -->
+      <section style="margin-top:68px; display:flex; flex-direction:column; align-items:center;">
+        <div
+          style="width:100%; max-width:720px; padding:1px; border-radius:18px; background:linear-gradient(120deg,rgba(168,85,247,0.55),rgba(236,72,153,0.35) 45%,rgba(34,211,238,0.30)); animation:rtr-rise 1100ms cubic-bezier(.16,.84,.24,1) 560ms both;">
+          <div
+            style="display:flex; align-items:center; gap:12px; padding:12px 12px 12px 22px; border-radius:17px; background:rgba(12,13,18,0.92); backdrop-filter:blur(18px);">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#4b4d5a;">›</span>
+            <input id="urlInput" placeholder="https://www.instagram.com/reel/…" spellcheck="false"
+              style="flex:1; min-width:0; background:transparent; border:0; outline:none; color:#e7e7ec; font-family:'JetBrains Mono',monospace; font-size:14.5px; letter-spacing:-0.01em; padding:12px 0;" />
+            <button id="analyzeBtn" class="analyze-btn" onclick="analyze()">Analyze</button>
+          </div>
+        </div>
+
+        <!-- steps -->
+        <div style="margin-top:26px; display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
+          <div class="step-pill" id="step1"><span>📥</span><span>downloading</span></div>
+          <div class="step-pill" id="step2"><span>🎙️</span><span>transcribing</span></div>
+          <div class="step-pill" id="step3"><span>👁️</span><span>reading screen</span></div>
+          <div class="step-pill" id="step4"><span>📄</span><span>reading caption</span></div>
+          <div class="step-pill" id="step5"><span>🤖</span><span>generating</span></div>
+        </div>
+
+        <div id="statusText"
+          style="margin-top:22px; min-height:20px; font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.01em; color:#6b6d7c; text-align:center;">
+          idle · waiting for a reel</div>
+
+        <!-- error -->
+        <div id="errorBox"
+          style="display:none; margin-top:26px; width:100%; max-width:720px; display:none; gap:14px; padding:18px 20px; border-radius:14px; border:1px solid rgba(248,113,113,0.42); background:rgba(248,113,113,0.06);">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#f87171;">!</span>
+          <div>
+            <div
+              style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#f87171;">
+              pipeline error</div>
+            <div id="errorText" style="margin-top:8px; font-size:14.5px; line-height:1.5; color:#d6a3a3;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- results -->
+      <section id="resultSection" style="display:none; margin-top:96px;">
+        <div
+          style="padding:1px; border-radius:22px; background:linear-gradient(150deg,rgba(74,222,128,0.20),rgba(168,85,247,0.12) 40%,rgba(255,255,255,0.03));"></div>>
+          <div
+            style="border-radius:21px; background:rgba(11,12,17,0.45); backdrop-filter:blur(8px); padding:40px 44px 30px;"></div>
+
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:30px; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span
+                  style="width:9px; height:9px; border-radius:50%; background:#4ade80; box-shadow:0 0 14px rgba(74,222,128,0.9),0 0 32px rgba(74,222,128,0.4); animation:rtr-pulse 2.4s ease-in-out infinite;"></span>
+                <span
+                  style="font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.02em; color:#4ade80;">//
+                  project roadmap</span>
+              </div>
+              <span
+                style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:#555764;">LangGraph
+                · 4 agents</span>
+            </div>
+
+            <div id="roadmapText" class="roadmap-content" style="padding:34px 0 6px;"></div>
+
+            <!-- caption toggle -->
+            <div
+              style="margin-top:30px; padding-top:24px; border-top:1px solid rgba(255,255,255,0.055); display:flex; justify-content:center;">
+              <button class="toggle-btn" onclick="toggleCaption()">
+                <span style="color:#a855f7;">&lt;/&gt;</span>
+                <span id="toggleLabel">show extracted reel content</span>
+              </button>
+            </div>
+
+            <div id="captionBox"
+              style="display:none; margin-top:20px; padding:20px 22px; border-radius:14px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.018);">
+              <div
+                style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:#a855f7; margin-bottom:12px;">
+                extracted content</div>
+              <p id="captionText"
+                style="margin:0; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.75; color:#7f818f; white-space:pre-wrap;">
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <div style="position:relative; z-index:2; margin-top:60px; margin-bottom:60px; display:flex; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:#6b6d7c;">built for people who save reels and never build them</div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── background canvas (from Claude Design) ────────────────────
+    (function () {
+      const canvas = document.getElementById("bgCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const COLS = 68, ROWS = 46, SPAN = 17, FAR = 17, CAM_Y = 2.15, AMP = 1.5, LENS_R = 0.95;
+      const HUES = [276, 322, 192, 156];
+      let w = 0, h = 0, dpr = 1, cx = 0, horizon = 0, focal = 0;
+      const resize = () => { dpr = Math.min(window.devicePixelRatio || 1, 2); w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); cx = w / 2; horizon = h * 0.5; focal = Math.max(w, 820) * 0.62; };
+      const hash = (x, y) => { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); };
+      const vnoise = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi; const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf); const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1); return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v; };
+      const fbm = (x, y) => vnoise(x, y) * 0.58 + vnoise(x * 2.2 + 5.2, y * 2.2 + 1.3) * 0.28 + vnoise(x * 4.6 + 9.1, y * 4.6 + 7.7) * 0.14;
+      const slickHue = (p) => { const ph = ((p % 4) + 4) % 4, i0 = Math.floor(ph), fr = ph - i0; return HUES[i0] + (HUES[(i0 + 1) % 4] - HUES[i0]) * fr; };
+      const pointer = { sx: -9999, sy: -9999, tsx: -9999, tsy: -9999, on: 0, ton: 0, wx: 0, wz: 5.5, nx: 0, ny: 0, tnx: 0, tny: 0 };
+      const trail = [];
+      window.addEventListener("pointermove", (e) => { pointer.tsx = e.clientX; pointer.tsy = e.clientY; pointer.ton = 1; pointer.tnx = (e.clientX / Math.max(1, window.innerWidth)) * 2 - 1; pointer.tny = (e.clientY / Math.max(1, window.innerHeight)) * 2 - 1; }, { passive: true });
+      document.addEventListener("pointerleave", () => { pointer.ton = 0; });
+      window.addEventListener("resize", resize);
+      let camX = 0, hz = 0, intro = 0, lastDrop = 0, raf;
+      resize();
+      const motes = [];
+      for (let i = 0; i < 240; i++)motes.push({ x: (Math.random() - 0.5) * SPAN * 1.4, z: 0.9 + Math.random() * FAR, y: Math.random() * 2.4, s: 0.5 + Math.random() * 0.9 });
+      const N = COLS + 1;
+      const mk = () => ({ x: new Float32Array(N), sx: new Float32Array(N), sy: new Float32Array(N), fog: new Float32Array(N), nh: new Float32Array(N), sl: new Float32Array(N) });
+      let far = mk(), near = mk();
+      const zAt = (j) => 0.9 + Math.pow(j / ROWS, 1.5) * FAR;
+      const bulge = (dx, dz) => Math.exp(-(dx * dx + dz * dz) / (2 * LENS_R * LENS_R));
+      const wake = (x, z, now) => { let g = pointer.on > 0.01 ? bulge(x - pointer.wx, z - pointer.wz) * pointer.on : 0; for (let k = 0; k < trail.length; k++) { const p = trail[k]; const age = now - p.t0; const life = 1 - age / 1.5; if (life <= 0) continue; const r = LENS_R * (0.85 + age * 0.75); const dx = x - p.x, dz = z - p.z, d2 = dx * dx + dz * dz; if (d2 > 9 * r * r) continue; g += Math.exp(-d2 / (2 * r * r)) * life * life * 0.3; } return g > 1.1 ? 1.1 : g; };
+      const fillRow = (row, j, t) => { const z = zAt(j); const fog = Math.pow(Math.max(0, 1 - (z - 0.9) / (FAR * 0.92)), 1.3); const amp = AMP * (0.55 + 0.45 * intro); for (let i = 0; i < N; i++) { const x = (i / COLS - 0.5) * SPAN; const n = fbm(x * 0.3 + 11 + t * 0.035, z * 0.3 - t * 0.14); let hgt = (n - 0.47) * amp; const g = wake(x, z, t); hgt += g * 1.05; row.x[i] = x; row.nh[i] = n; row.sl[i] = g; row.fog[i] = fog; row.sx[i] = cx + ((x - camX) / z) * focal; row.sy[i] = hz + ((CAM_Y - hgt) / z) * focal; } };
+      const sample = (row, i, t) => { const fog = row.fog[i], nh = row.nh[i], sl = row.sl[i]; if (sl > 0.16) { const k = (sl - 0.16) / 0.84; const hue = slickHue(k * 3.4 + nh * 2.2 + t * 0.5 + row.x[i] * 0.1); return `hsl(${hue.toFixed(0)},78%,${(2.4 + nh * 5 + k * k * 15 * fog).toFixed(1)}%)`; } return `hsl(${(274 - nh * 76).toFixed(0)},46%,${(1.8 + (nh * nh) * 14 * fog).toFixed(1)}%)`; };
+      const start = performance.now();
+      const frame = (now) => { const t = (now - start) / 1000; const first = pointer.sx < -5000; pointer.sx += (pointer.tsx - pointer.sx) * (first ? 1 : 0.1); pointer.sy += (pointer.tsy - pointer.sy) * (first ? 1 : 0.1); pointer.on += (pointer.ton - pointer.on) * 0.05; pointer.nx += (pointer.tnx - pointer.nx) * 0.045; pointer.ny += (pointer.tny - pointer.ny) * 0.045; intro += (1 - intro) * 0.018; camX = Math.sin(t * 0.11) * 0.55 + pointer.nx * 1.35; hz = horizon + pointer.ny * 22 + Math.sin(t * 0.07) * 8; if (pointer.sy > hz + 8) { const pz = Math.min(FAR, Math.max(1, CAM_Y * focal / (pointer.sy - hz))); pointer.wz += (pz - pointer.wz) * 0.18; pointer.wx += (((pointer.sx - cx) * pointer.wz / focal + camX) - pointer.wx) * 0.18; if (t - lastDrop > 0.09 && pointer.on > 0.2) { lastDrop = t; trail.push({ x: pointer.wx, z: pointer.wz, t0: t }); if (trail.length > 14) trail.shift(); } } while (trail.length && t - trail[0].t0 > 1.5) trail.shift(); ctx.clearRect(0, 0, w, h); ctx.globalAlpha = Math.min(1, intro * 1.15); const haze = ctx.createRadialGradient(cx - camX * 40, hz, 0, cx - camX * 40, hz, w * 0.55); haze.addColorStop(0, "rgba(168,85,247,0.10)"); haze.addColorStop(0.45, "rgba(34,211,238,0.045)"); haze.addColorStop(1, "rgba(8,9,13,0)"); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = haze; ctx.fillRect(0, hz - h * 0.34, w, h * 0.72); ctx.globalCompositeOperation = "source-over"; fillRow(far, ROWS, t); for (let j = ROWS - 1; j >= 0; j--) { fillRow(near, j, t); const g = ctx.createLinearGradient(near.sx[0], 0, near.sx[COLS], 0); for (let i = 0; i <= COLS; i += 3)g.addColorStop(i / COLS, sample(near, i, t)); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(far.sx[0], far.sy[0]); for (let i = 1; i < N; i++)ctx.lineTo(far.sx[i], far.sy[i]); for (let i = COLS; i >= 0; i--)ctx.lineTo(near.sx[i], near.sy[i]); ctx.closePath(); ctx.fill(); let maxSl = 0; for (let i = 0; i < N; i += 4)if (near.sl[i] > maxSl) maxSl = near.sl[i]; const fog = near.fog[0]; ctx.strokeStyle = maxSl > 0.2 ? `hsla(${slickHue(maxSl * 3.4 + t * 0.5).toFixed(0)},88%,66%,${(0.06 + (maxSl - 0.2) * 0.3) * fog})` : `rgba(214,206,255,${0.075 * fog})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(near.sx[0], near.sy[0]); for (let i = 1; i < N; i++)ctx.lineTo(near.sx[i], near.sy[i]); ctx.stroke(); if (j % 2 === 0) { for (let i = 1; i < N; i += 3) { const sl = near.sl[i], fg = near.fog[i]; const rr = 0.5 + fg * 0.9 + sl * 1.3; ctx.fillStyle = sl > 0.2 ? `hsla(${slickHue(sl * 3.4 + near.nh[i] * 2.2 + t * 0.5).toFixed(0)},92%,78%,${Math.min(0.9, 0.25 + sl * 0.6)})` : `rgba(226,214,255,${(0.05 + near.nh[i] * 0.22) * fg})`; ctx.beginPath(); ctx.arc(near.sx[i], near.sy[i], rr, 0, 6.2832); ctx.fill(); } } const swap = far; far = near; near = swap; } for (let k = 0; k < motes.length; k++) { const m = motes[k]; m.z -= 0.028 * m.s; if (m.z < 0.9) { m.z = FAR; m.x = (Math.random() - 0.5) * SPAN * 1.4; m.y = Math.random() * 2.4; } const g = wake(m.x, m.z, t); const y = m.y + Math.sin(t * 0.7 + k) * 0.05 + g * 1.1; const x = m.x + (m.x - pointer.wx) * g * 0.35; const sx = cx + ((x - camX) / m.z) * focal; const sy = hz + ((CAM_Y - y) / m.z) * focal; const fog = Math.pow(Math.max(0, 1 - (m.z - 0.9) / FAR), 1.2); const r = Math.min(2.1, Math.max(0.5, (0.02 * focal / m.z) * m.s)); ctx.fillStyle = g > 0.2 ? `hsla(${slickHue(g * 3.4 + t * 0.5 + k * 0.4).toFixed(0)},92%,76%,${Math.min(1, 0.3 + g * 0.7)})` : `rgba(233,229,255,${0.08 + fog * 0.30})`; ctx.beginPath(); ctx.arc(sx, sy, r, 0, 6.2832); ctx.fill(); } ctx.globalAlpha = 1; raf = requestAnimationFrame(frame); }; raf = requestAnimationFrame(frame);
+    })();
+
+    // ── title parallax ────────────────────────────────────────────
+    (function () {
+      const el = document.getElementById("titleEl");
+      if (!el) return;
+      const words = Array.from(el.children);
+      const RATE = [0.13, -0.07, 0.19], TILT = [-0.012, 0.02, 0.014];
+      let cur = 0, primed = false;
+      const tick = (now) => {
+        const y = window.scrollY || 0;
+        cur += (y - cur) * (primed ? 0.085 : 1); primed = true;
+        const t = now / 1000;
+        for (let i = 0; i < words.length; i++) {
+          const bob = Math.sin(t * 0.62 + i * 1.5) * 6;
+          const dy = cur * RATE[i % RATE.length] + bob;
+          words[i].style.transform = `translate3d(0,${dy.toFixed(2)}px,0) rotate(${(cur * TILT[i % TILT.length] * 0.06).toFixed(3)}deg)`;
+        }
+        el.style.opacity = Math.max(0.25, 1 - cur / 620).toFixed(3);
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })();
+
+    // ── app logic ─────────────────────────────────────────────────
+    let captionVisible = false;
+
+    function toggleCaption() {
+      captionVisible = !captionVisible;
+      document.getElementById("captionBox").style.display = captionVisible ? "block" : "none";
+      document.getElementById("toggleLabel").innerText = captionVisible ? "hide extracted reel content" : "show extracted reel content";
+    }
+
+    function setStep(n) {
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById(`step${i}`);
+        el.classList.remove("active", "done");
+        if (i === n) el.classList.add("active");
+        if (i < n) el.classList.add("done");
+      }
+    }
+
+    function parseMarkdown(text) {
+      return text
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+        .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+        .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/^─+$/gm, "<hr>").replace(/^-{3,}$/gm, "<hr>")
+        .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
+        .replace(/^\s*\d+\. (.+)$/gm, "<li>$1</li>")
+        .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/^(?!<[hul]|<li|<hr|<\/)(.*\S.*)$/gm, "<p>$1</p>")
+        .replace(/\n{2,}/g, "\n");
+    }
+    function parseMarkdown(text) {
+      return text
+        // escape HTML
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        // headings
+        .replace(/^### (.+)$/gm, '<h3 style="color:#a855f7;margin:20px 0 8px;font-size:1rem;font-weight:700;font-family:\'Space Grotesk\',sans-serif;">$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2 style="color:#22d3ee;margin:24px 0 10px;font-size:1.1rem;font-weight:700;font-family:\'Space Grotesk\',sans-serif;">$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1 style="color:#ec4899;margin:28px 0 12px;font-size:1.3rem;font-weight:800;font-family:\'Bricolage Grotesque\',sans-serif;">$1</h1>')
+        // bold — **text**
+        .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#22d3ee;font-weight:600;">$1</strong>')
+        // italic — *text* (single asterisk that is NOT a bullet)
+        .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+        // horizontal rules
+        .replace(/^─+$/gm, '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:24px 0;">')
+        .replace(/^-{3,}$/gm, '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:24px 0;">')
+        // numbered lists — must come before bullet list
+        .replace(/^\s*(\d+)\. (.+)$/gm, '<p style="margin:0 0 10px 24px;font-size:0.92rem;color:#94a3b8;">$1. $2</p>')
+        // bullet lists
+        .replace(/^\s*[-*] (.+)$/gm, '<li style="margin-bottom:8px;font-size:0.92rem;color:#94a3b8;list-style-type:disc;">$1</li>')
+        // wrap consecutive <li> items in proper list tags
+        .replace(/(<li[^>]*>[\s\S]*?<\/li>\n?)+/g, (match) => {
+          if (match.includes('list-style-type:decimal')) {
+            return `<ol style="margin:10px 0 16px 24px;padding:0;">${match}</ol>`;
+          }
+          return `<ul style="margin:10px 0 16px 24px;padding:0;">${match}</ul>`;
+        })
+        // inline code
+        .replace(/`([^`]+)`/g, '<code style="background:rgba(34,211,238,0.1);color:#22d3ee;padding:2px 8px;border-radius:6px;font-family:\'JetBrains Mono\',monospace;font-size:0.82rem;">$1</code>')
+        // paragraphs — lines not already wrapped in HTML tags
+        .replace(/^(?!<[houpc]|<li|<hr|<\/|$)(.*\S.*)$/gm, '<p style="margin:0 0 12px;font-size:0.93rem;line-height:1.8;color:#cccccc;">$1</p>')
+        // clean up extra blank lines
+        .replace(/\n{3,}/g, '\n\n');
+    }
+
+    async function analyze() {
+      const url = document.getElementById("urlInput").value.trim();
+      const btn = document.getElementById("analyzeBtn");
+      const statusText = document.getElementById("statusText");
+      const resultSection = document.getElementById("resultSection");
+      const errorBox = document.getElementById("errorBox");
+      const roadmapText = document.getElementById("roadmapText");
+
+      // reset
+      resultSection.style.display = "none";
+      errorBox.style.display = "none";
+      captionVisible = false;
+      document.getElementById("captionBox").style.display = "none";
+      setStep(0);
+
+      if (!url) {
+        errorBox.style.display = "flex";
+        document.getElementById("errorText").innerText = "No URL provided. Paste a public Instagram reel link.";
+        return;
+      }
+
+      // loading
+      btn.disabled = true;
+      btn.innerText = "Analyzing…";
+      statusText.innerText = "fetching reel media from source…";
+      setStep(1);
+
+      const STATUSES = [
+        "fetching reel media from source…",
+        "whisper: transcribing audio track…",
+        "ocr: extracting on-screen text from frames…",
+        "parsing caption and hashtags…",
+        "langgraph: 4 agents drafting your roadmap…"
+      ];
+      const timers = [];
+      for (let i = 1; i < 5; i++) {
+        timers.push(setTimeout(() => {
+          setStep(i + 1);
+          statusText.innerText = STATUSES[i];
+        }, i * 12000));
+      }
+
+      try {
+        const response = await fetch("http://localhost:8000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await response.json();
+        timers.forEach(clearTimeout);
+
+        if (data.success) {
+          roadmapText.innerHTML = parseMarkdown(data.roadmap);
+          document.getElementById("captionText").innerText = data.caption || "";
+          resultSection.style.display = "block";
+          setStep(6);
+          statusText.innerText = "done · 5/5 nodes complete · roadmap generated";
+        } else {
+          errorBox.style.display = "flex";
+          document.getElementById("errorText").innerText = data.error;
+          statusText.innerText = "halted · pipeline error";
+          setStep(0);
+        }
+
+      } catch (err) {
+        timers.forEach(clearTimeout);
+        errorBox.style.display = "flex";
+        document.getElementById("errorText").innerText = "Could not connect to server. Make sure api.py is running with: python -m uvicorn api:app --port 8001";
+        statusText.innerText = "halted · connection error";
+        setStep(0);
+      }
+
+      btn.disabled = false;
+      btn.innerText = "Re-analyze";
+    }
+
+    // enter key support
+    document.getElementById("urlInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") analyze();
+    });
+  </script>
+</body>
+
+</html>

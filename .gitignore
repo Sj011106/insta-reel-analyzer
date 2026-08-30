@@ -1,6 +1,10 @@
+.env
+cookies.txt
+faiss_db/
+chroma_db/
+venv312/
 __pycache__/
 *.pyc
 *.mp3
 *.mp4
-.env
-venv/
+roadmap_*.txt

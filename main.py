@@ -51,7 +51,7 @@ def main():
     # ── Stage 2: Analyze with Gemini ─────────────────────────
     print("\n[2/2] Analyzing with Gemini AI...")
     try:
-        roadmap = analyze_reel(reel_data["caption"], GEMINI_API_KEY)
+        roadmap = analyze_reel(reel_data["caption"], GROQ_API_KEY)
     except Exception as e:
         print(f"\n❌ Gemini API error: {e}")
         print("   Double-check your API key in main.py")

@@ -1,2 +1,4 @@
 instaloader
 google-generativeai
+fastapi
+uvicorn
